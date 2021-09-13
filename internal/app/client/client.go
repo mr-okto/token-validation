@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 	oauth2req "token-validation/internal/pkg/request/oauth2"
 	oauth2resp "token-validation/internal/pkg/response/oauth2_reader"
@@ -15,14 +16,18 @@ var (
 )
 
 func Run() {
-	req := oauth2req.Create("ab", "x")
+	cliArgs := os.Args[1:]
+	if len(cliArgs) != 4 {
+		log.Fatalf("invalid cli args; provide \"host port token scope\"")
+	}
+	host, port, token, scope := cliArgs[0], cliArgs[1], cliArgs[2], cliArgs[3]
 
-	conn, err := net.Dial("tcp", "localhost:2000")
+	conn, err := net.Dial("tcp", host+":"+port)
 	if err != nil {
 		log.Fatalf("unable to dial the server: %v", err)
 	}
 	defer conn.Close()
-
+	req := oauth2req.Create(token, scope)
 	err = req.Write(conn, ByteOrder)
 	if err != nil {
 		log.Fatalf("unable to send request: %v", err)
