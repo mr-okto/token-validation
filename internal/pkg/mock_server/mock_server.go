@@ -31,8 +31,11 @@ func handleConn(ln net.Listener, expectedReqBody []byte, responseMock []byte) {
 	if err != nil {
 		log.Fatalf("Unable to read body from Conn: %v", err)
 	}
-	if !bytes.Equal(actualReqBody, expectedReqBody) {
+	if expectedReqBody != nil && !bytes.Equal(actualReqBody, expectedReqBody) {
 		log.Fatalf("Invalid request body;\nactual:\t%v\nexpected:\t%v", actualReqBody, expectedReqBody)
+	}
+	if responseMock == nil {
+		return // Server should not send anything back
 	}
 	_, err = conn.Write(responseMock)
 	if err != nil {
@@ -41,6 +44,8 @@ func handleConn(ln net.Listener, expectedReqBody []byte, responseMock []byte) {
 	return
 }
 
+// LaunchMockServer expectedReqBody should be nil for it not to be compared with actual request
+// LaunchMockServer resp should be nil for server not to send anything back
 func LaunchMockServer(ready chan struct{}, expectedReqBody []byte, resp []byte) {
 	ln, err := net.Listen("tcp", ":"+PORT)
 	if err != nil {

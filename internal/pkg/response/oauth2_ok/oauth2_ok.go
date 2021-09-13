@@ -73,7 +73,7 @@ func (r *OkResponse) Print(w io.Writer) (err error) {
 		"client_type: %d\n"+
 		"expires_in: %d\n"+
 		"user_id: %d\n"+
-		"username: %s\n",
+		"username: %s",
 		r.body.ClientId.ToString(),
 		r.body.ClientType,
 		r.body.ExpiresIn,

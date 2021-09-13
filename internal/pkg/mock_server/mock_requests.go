@@ -60,7 +60,7 @@ type MockErrorResponse struct {
 	// Body
 	RetCode        int32
 	ErrorStringLen int32
-	errorString    []int8
+	ErrorString    []int8
 }
 
 func (resp *MockErrorResponse) Encode() []byte {
@@ -78,7 +78,7 @@ func (resp *MockErrorResponse) Encode() []byte {
 	if err != nil {
 		log.Fatalf("Unable to Encode response: %v", err)
 	}
-	err = binary.Write(buf, binary.LittleEndian, resp.errorString)
+	err = binary.Write(buf, binary.LittleEndian, resp.ErrorString)
 	if err != nil {
 		log.Fatalf("Unable to Encode response error string: %v", err)
 	}
