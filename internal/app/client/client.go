@@ -41,8 +41,7 @@ func Run() {
 		return
 	}
 	if req.GetId() != resp.GetId() {
-		logFatalf("request id [%d] does not match response id [%d]",
-			req.GetId(), resp.GetId())
+		logFatalf("request id does not match response id")
 		return
 	}
 	var b strings.Builder
