@@ -18,13 +18,13 @@ var (
 func Run() {
 	cliArgs := os.Args[1:]
 	if len(cliArgs) != 4 {
-		log.Fatalf("invalid cli args; provide \"host port token scope\"")
+		log.Fatalf("invalid cli args; provide \"host port Token Scope\"")
 	}
 	host, port, token, scope := cliArgs[0], cliArgs[1], cliArgs[2], cliArgs[3]
 
 	conn, err := net.Dial("tcp", host+":"+port)
 	if err != nil {
-		log.Fatalf("unable to dial the server: %v", err)
+		log.Fatalf("unable to dial the launchMockServer: %v", err)
 	}
 	defer conn.Close()
 	req := oauth2req.Create(token, scope)
