@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	hdr "token-validation/internal/pkg/header"
+	"token-validation/internal/pkg/id_generator"
 	"token-validation/internal/pkg/request"
 	"token-validation/internal/pkg/str"
 )
@@ -34,10 +35,11 @@ func Create(token string, scope string) request.Request {
 	}
 	// 12 = sizeOf(SvcMsg) + sizeOf(Token.Len) + sizeOf(Scope.Len)
 	bodyLen := 12 + body.Token.Len + body.Scope.Len
+	reqId := id_generator.GetInstance().GenerateId()
 	h := &hdr.Header{
 		SvcId:      SvcId,
 		BodyLength: bodyLen,
-		RequestId:  0x00000005, //TODO: generate IDs
+		RequestId:  reqId,
 	}
 	return &Request{
 		header: h,
