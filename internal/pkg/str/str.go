@@ -47,3 +47,11 @@ func (s *Str) Write(w io.Writer, order binary.ByteOrder) error {
 	err = binary.Write(w, order, s.Data)
 	return err
 }
+
+func (s *Str) ToString() string {
+	bs := make([]byte, len(s.Data))
+	for i, v := range s.Data {
+		bs[i] = byte(v)
+	}
+	return string(bs)
+}

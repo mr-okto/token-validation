@@ -5,7 +5,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"token-validation/internal/pkg/header"
+	hdr "token-validation/internal/pkg/header"
+	"token-validation/internal/pkg/request"
 	"token-validation/internal/pkg/str"
 )
 
@@ -16,8 +17,8 @@ type Body struct {
 }
 
 type Request struct {
-	Header *header.Header
-	Body   *Body
+	header *hdr.Header
+	body   *Body
 }
 
 const (
@@ -25,7 +26,7 @@ const (
 	SvcId  = int32(0x00000002)
 )
 
-func Create(token string, scope string) *Request {
+func Create(token string, scope string) request.Request {
 	body := &Body{
 		SvcMsg: SvcMsg,
 		Token:  str.FromString(token),
@@ -33,32 +34,36 @@ func Create(token string, scope string) *Request {
 	}
 	// 12 = sizeOf(SvcMsg) + sizeOf(Token.Len) + sizeOf(Scope.Len)
 	bodyLen := 12 + body.Token.Len + body.Scope.Len
-	h := &header.Header{
+	h := &hdr.Header{
 		SvcId:      SvcId,
 		BodyLength: bodyLen,
 		RequestId:  0x00000005, //TODO: generate IDs
 	}
 	return &Request{
-		Header: h,
-		Body:   body,
+		header: h,
+		body:   body,
 	}
+}
+
+func (r *Request) GetId() int32 {
+	return r.header.RequestId
 }
 
 func (r *Request) Write(w io.Writer, order binary.ByteOrder) error {
 	buf := &bytes.Buffer{}
-	err := binary.Write(buf, order, r.Header)
+	err := binary.Write(buf, order, r.header)
 	if err != nil {
 		return err
 	}
-	err = binary.Write(buf, order, r.Body.SvcMsg)
+	err = binary.Write(buf, order, r.body.SvcMsg)
 	if err != nil {
 		return err
 	}
-	err = r.Body.Token.Write(buf, order)
+	err = r.body.Token.Write(buf, order)
 	if err != nil {
 		return err
 	}
-	err = r.Body.Scope.Write(buf, order)
+	err = r.body.Scope.Write(buf, order)
 	if err != nil {
 		return err
 	}
@@ -67,7 +72,7 @@ func (r *Request) Write(w io.Writer, order binary.ByteOrder) error {
 	if err != nil {
 		return err
 	}
-	payloadSize := int64(header.Size) + int64(r.Header.BodyLength)
+	payloadSize := int64(hdr.Size) + int64(r.header.BodyLength)
 	if written != payloadSize {
 		return fmt.Errorf("unable to write request; "+
 			"written bytes: %d; request length: %d", written, payloadSize)

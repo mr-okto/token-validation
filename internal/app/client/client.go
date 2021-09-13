@@ -3,35 +3,43 @@ package client
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 	"net"
-	"token-validation/internal/pkg/request/oauth2"
-	"token-validation/internal/pkg/str"
+	"strings"
+	oauth2req "token-validation/internal/pkg/request/oauth2"
+	oauth2resp "token-validation/internal/pkg/response/oauth2_reader"
 )
 
 var (
 	ByteOrder = binary.LittleEndian
 )
 
-// Run TODO: remove panic
 func Run() {
-	req := oauth2.Create("ab", "x")
-	fmt.Printf("Sending the request: %v\n", req)
+	req := oauth2req.Create("ab", "x")
 
 	conn, err := net.Dial("tcp", "localhost:2000")
 	if err != nil {
-		panic(err)
+		log.Fatalf("unable to dial the server: %v", err)
 	}
-
 	defer conn.Close()
 
 	err = req.Write(conn, ByteOrder)
 	if err != nil {
-		panic(err)
+		log.Fatalf("unable to send request: %v", err)
 	}
 
-	readStruct, err := str.FromReader(conn, ByteOrder)
+	resp, err := oauth2resp.Read(conn, ByteOrder)
 	if err != nil {
-		panic(err)
+		log.Fatalf("unable to read response: %v", err)
 	}
-	fmt.Println("ReadStruct: ", readStruct)
+	if req.GetId() != resp.GetId() {
+		log.Fatalf("request id [%d] does not match response id [%d]",
+			req.GetId(), resp.GetId())
+	}
+	var b strings.Builder
+	err = resp.Print(&b)
+	if err != nil {
+		log.Fatalf("unable to output request: %v", err)
+	}
+	fmt.Println(b.String())
 }
